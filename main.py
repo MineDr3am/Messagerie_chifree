@@ -1,9 +1,8 @@
 import socket
 import sys
 
-def connection (hote, pseudo):
+def connection(hote, pseudo):
 
-    hote = ""
     port = 666
 
     connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,16 +19,28 @@ def connection (hote, pseudo):
 
 
 def getArg():
-    addresse = sys.argv[1]
-    pseudo = sys.argv[2]
+    if len(sys.argv) >= 3:
+        try:
+            addresse = sys.argv[1]
+        except:
+            print("Une erreur est survenue pour récupérer l'adresse ")
+        try:
+            pseudo = sys.argv[2]
+        except UnboundLocalError:
+            print("Une erreur est survenue pour récupérer le pseudo")
 
-    return [addresse, pseudo]
+        return [addresse, pseudo]
+    else:
+        return -1
 
-infoUser = {
-    "addresse": getArg()[0],
-    "pseudo": getArg()[1]
-}
+infoUser = {}
+if not getArg() == -1:
+    infoUser = {
+        "addresse": getArg()[0],
+        "pseudo": getArg()[1]
+    }
+if infoUser:
+    print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
 
-print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
+    connection(infoUser["addresse"], infoUser["pseudo"])
 
-connection(infoUser["addresse"], infoUser["pseudo"])
