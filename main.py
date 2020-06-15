@@ -1,23 +1,21 @@
 import socket
 
-HOST = 'arrobe.fr'
-PORT = 666
+hote = "arrobe.fr"
+port = 666
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((HOST, PORT))
-print ('Connexion vers ' + HOST + ':' + str(PORT) + ' reussie.')
+connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+connexion_avec_serveur.connect((hote, port))
+print("Connexion établie avec le serveur sur le port {}".format(port))
 
-message = 'Hello, world'
-print('Envoi de :' + message)
-n = client.send(message)
-if (n != len(message)):
-        print ('Erreur envoi.')
-else:
-        print ('Envoi ok.')
+msg_a_envoyer = b""
+while msg_a_envoyer != b"fin":
+    msg_a_envoyer = input("> ")
+    # Peut planter si vous tapez des caractères spéciaux
+    msg_a_envoyer = msg_a_envoyer.encode()
+    # On envoie le message
+    connexion_avec_serveur.send(msg_a_envoyer)
+    msg_recu = connexion_avec_serveur.recv(1024)
+    print(msg_recu.decode()) # Là encore, peut planter s'il y a des accents
 
-print ('Reception...')
-donnees = client.recv(1024)
-print ('Recu :'), donnees
-
-print ('Deconnexion.')
-client.close()
+print("Fermeture de la connexion")
+connexion_avec_serveur.close()
