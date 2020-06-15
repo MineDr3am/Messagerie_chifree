@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import socket
 
 hote = "arrobe.fr"
@@ -19,3 +20,22 @@ while msg_a_envoyer != b"fin":
 
 print("Fermeture de la connexion")
 connexion_avec_serveur.close()
+=======
+import sys
+
+
+def getArg():
+    addresse = sys.argv[1]
+    pseudo = sys.argv[2]
+
+    return [addresse, pseudo]
+
+infoUser = {
+    "addresse": getArg()[0],
+    "pseudo": getArg()[1]
+}
+
+getArg();
+
+print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
+>>>>>>> develop
