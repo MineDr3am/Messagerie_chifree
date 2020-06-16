@@ -24,11 +24,12 @@ class Recv(threading.Thread):
 class Send(threading.Thread):
     socket = None
 
-    def __init__(self, canal):
+    def __init__(self, canal, pseudo):
         self.socket = canal
         threading.Thread.__init__(self)
         self.setDaemon = True
         self.start()
+        self.socket.sendall(bytes("#pseudo=" + pseudo + "\r\n", 'utf-8'))
 
     def run(self):
         while True:
@@ -43,7 +44,7 @@ def connection(hote, pseudo):
     canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     canal.connect((hote, port))
 
-    Send(canal)
+    Send(canal, pseudo)
     Recv(canal)
 
 
