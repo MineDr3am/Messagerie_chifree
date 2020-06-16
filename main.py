@@ -10,10 +10,12 @@ from Crypto.Cipher import AES
 
 class Recv(threading.Thread):
     socket = None
+    cipher  = None
     data = ''
 
     def __init__(self, canal, cipher):
         self.socket = canal
+        self.cipher = cipher
         threading.Thread.__init__(self)
         self.setDaemon = True
         self.start()
@@ -28,6 +30,7 @@ class Recv(threading.Thread):
 
 class Send(threading.Thread):
     socket = None
+    cipher = None
 
     def __init__(self, canal, pseudo, cipher):
         self.socket = canal
@@ -40,7 +43,6 @@ class Send(threading.Thread):
     def run(self):
         while True:
             saisie = self.cipher.encrypt(input(""))
-            print("encrypted: {}".format(saisie))
             self.socket.sendall(bytes(str(saisie) + "\r\n", 'utf-8'))
             time.sleep(0.001)
 
@@ -53,7 +55,7 @@ def tcp(user):
     canal.connect((user["addresse"], port))
 
     Send(canal, user["pseudo"], cipher)
-    Recv(canal)
+    Recv(canal, cipher)
 
 
 
