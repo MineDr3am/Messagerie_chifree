@@ -1,21 +1,54 @@
 import socket
 import sys
+import time
+import socket
+import threading
+
+class Recv(threading.Thread):
+    socket = None
+    data = ""
+
+    def __int__(self, canal):
+        self.socket = canal
+        threading.Thread.__init__(self)
+        self.setDaemon = True
+        self.start()
+
+    def run(self):
+        while True:
+            self.data = self.data + self.socket.recv(1).decode('utf-8')
+            if "\r\n" in self.data:
+                print(self.data)
+                self.data = ''
+            time.sleep(0.001)
+
+class Send(threading.Thread):
+    socket = None
+
+    def __init__(self, canal):
+        self.socket = canal
+        threading.Thread.__init__(self)
+        self.setDaemon = True
+        self.start()
+
+    def run(self):
+        while True:
+            saisie = input("")
+            self.socket.sendall(bytes(saisie + "\r\n", 'utf-8'))
+            time.sleep(0.001)
+
+
+
 
 def connection(hote, pseudo):
-
+    print(hote)
     port = 666
 
-    connexion_avec_serveur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    connexion_avec_serveur.connect((infoUser["addresse"], port))
+    canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    canal.connect((hote, port))
 
-    connexion_avec_serveur.send(infoUser["pseudo"])
-    print("Connexion établie avec le serveur sur le port {}".format(port))
-
-
-
-    print("Fermeture de la connexion")
-    connexion_avec_serveur.close()
-
+    Send(canal)
+    Recv(canal)
 
 
 def getArg():
@@ -43,4 +76,3 @@ if infoUser:
     print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
 
     connection(infoUser["addresse"], infoUser["pseudo"])
-
