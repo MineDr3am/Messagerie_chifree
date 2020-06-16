@@ -2,6 +2,11 @@ import sys
 import time
 import socket
 import threading
+import base64
+import hashlib
+from Crypto import Random
+from Crypto.Cipher import AES
+
 
 class Recv(threading.Thread):
     socket = None
@@ -23,9 +28,11 @@ class Recv(threading.Thread):
 
 class Send(threading.Thread):
     socket = None
+    cipher = None
 
-    def __init__(self, canal, pseudo):
+    def __init__(self, canal, pseudo, key):
         self.socket = canal
+        self.key = key
         threading.Thread.__init__(self)
         self.setDaemon = True
         self.start()
@@ -34,18 +41,20 @@ class Send(threading.Thread):
     def run(self):
         while True:
             saisie = input("")
-            self.socket.sendall(bytes(saisie + "\r\n", 'utf-8'))
+            cipher = AESCipher(self.key)
+            self.socket.sendall(cipher.encrypt(bytes(saisie + "\r\n", 'utf-8')))
             time.sleep(0.001)
 
-def connection(hote, pseudo):
-    print(hote)
+def tcp(user):
+    print(user["addresse"])
     port = 666
 
     canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    canal.connect((hote, port))
+    canal.connect((user["addresse"], port))
 
-    Send(canal, pseudo)
+    Send(canal, user["pseudo"], user["key"])
     Recv(canal)
+
 
 
 def getArg():
@@ -58,18 +67,49 @@ def getArg():
             pseudo = sys.argv[2]
         except UnboundLocalError:
             print("Une erreur est survenue pour récupérer le pseudo")
+        try:
+            key = sys.argv[3]
+        except UnboundLocalError:
+            print("Une erreur est survenue pour récupérer le pseudo")
 
-        return [addresse, pseudo]
+        return [addresse, pseudo, key]
     else:
         return -1
+
+
+class AESCipher(object):
+
+    def __init__(self, key):
+        self.bs = AES.block_size
+        self.key = hashlib.sha256(key.encode()).digest()
+
+    def encrypt(self, raw):
+        raw = self._pad(raw)
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return base64.b64encode(iv + cipher.encrypt(raw.encode()))
+
+    def decrypt(self, enc):
+        enc = base64.b64decode(enc)
+        iv = enc[:AES.block_size]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return self._unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
+
+    def _pad(self, s):
+        return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
+
+    @staticmethod
+    def _unpad(s):
+        return s[:-ord(s[len(s)-1:])]
 
 infoUser = {}
 if not getArg() == -1:
     infoUser = {
         "addresse": getArg()[0],
-        "pseudo": getArg()[1]
+        "pseudo": getArg()[1],
+        "key": getArg()[2]
     }
 if infoUser:
     print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
 
-    connection(infoUser["addresse"], infoUser["pseudo"])
+    tcp(infoUser)
