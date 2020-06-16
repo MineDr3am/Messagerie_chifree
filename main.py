@@ -30,9 +30,9 @@ class Send(threading.Thread):
     socket = None
     cipher = None
 
-    def __init__(self, canal, pseudo, key):
+    def __init__(self, canal, pseudo, cipher):
         self.socket = canal
-        self.key = key
+        self.cipher = cipher
         threading.Thread.__init__(self)
         self.setDaemon = True
         self.start()
@@ -40,19 +40,20 @@ class Send(threading.Thread):
 
     def run(self):
         while True:
-            saisie = input("")
-            cipher = AESCipher(self.key)
-            self.socket.sendall(cipher.encrypt(bytes(saisie + "\r\n", 'utf-8')))
+            saisie = self.cipher.encrypt(input(""))
+            print("encrypted: {}".format(saisie))
+            self.socket.sendall(bytes(str(saisie) + "\r\n", 'utf-8'))
             time.sleep(0.001)
 
 def tcp(user):
     print(user["addresse"])
     port = 666
 
+    cipher = AESCipher(user["key"])
     canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     canal.connect((user["addresse"], port))
 
-    Send(canal, user["pseudo"], user["key"])
+    Send(canal, user["pseudo"], cipher)
     Recv(canal)
 
 
