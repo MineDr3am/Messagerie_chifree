@@ -1,4 +1,3 @@
-import socket
 import sys
 import time
 import socket
@@ -6,9 +5,9 @@ import threading
 
 class Recv(threading.Thread):
     socket = None
-    data = ""
+    data = ''
 
-    def __int__(self, canal):
+    def __init__(self, canal):
         self.socket = canal
         threading.Thread.__init__(self)
         self.setDaemon = True
@@ -36,9 +35,6 @@ class Send(threading.Thread):
             saisie = input("")
             self.socket.sendall(bytes(saisie + "\r\n", 'utf-8'))
             time.sleep(0.001)
-
-
-
 
 def connection(hote, pseudo):
     print(hote)
