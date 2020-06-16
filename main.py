@@ -12,7 +12,7 @@ class Recv(threading.Thread):
     socket = None
     data = ''
 
-    def __init__(self, canal):
+    def __init__(self, canal, cipher):
         self.socket = canal
         threading.Thread.__init__(self)
         self.setDaemon = True
@@ -28,7 +28,6 @@ class Recv(threading.Thread):
 
 class Send(threading.Thread):
     socket = None
-    cipher = None
 
     def __init__(self, canal, pseudo, cipher):
         self.socket = canal
