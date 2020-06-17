@@ -132,3 +132,5 @@ dmypy.json
 # The keys public & private 
 private.pem
 public.pem
+private.priv
+public.pub
