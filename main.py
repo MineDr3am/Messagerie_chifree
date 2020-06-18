@@ -24,6 +24,15 @@ class Recv(threading.Thread):
         while True:
             self.data = self.data + self.socket.recv(1).decode('utf-8')
             if "\r\n" in self.data:
+                if "[AES]" in self.data:
+                    data2 = self.data
+                    pseudo = self.data.split(">")[0]
+                    self.data = self.data.split("'")[1]
+                    self.data =  pseudo + "> " + self.cipher.decrypt(self.data)
+
+                    if self.data == pseudo + "> ":
+                        self.data = data2
+
                 print(self.data)
                 self.data = ''
             time.sleep(0.001)
@@ -43,16 +52,15 @@ class Send(threading.Thread):
     def run(self):
         while True:
             saisie = self.cipher.encrypt(input(""))
-            self.socket.sendall(bytes(str(saisie) + "\r\n", 'utf-8'))
+            self.socket.sendall(bytes("[AES]" + str(saisie) + "\r\n", 'utf-8'))
             time.sleep(0.001)
-
 def tcp(user):
-    print(user["addresse"])
+    print(user["adresse"])
     port = 666
 
     cipher = AESCipher(user["key"])
     canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    canal.connect((user["addresse"], port))
+    canal.connect((user["adresse"], port))
 
     Send(canal, user["pseudo"], cipher)
     Recv(canal, cipher)
@@ -62,7 +70,7 @@ def tcp(user):
 def getArg():
     if len(sys.argv) >= 3:
         try:
-            addresse = sys.argv[1]
+            adresse = sys.argv[1]
         except:
             print("Une erreur est survenue pour récupérer l'adresse ")
         try:
@@ -74,7 +82,7 @@ def getArg():
         except UnboundLocalError:
             print("Une erreur est survenue pour récupérer le pseudo")
 
-        return [addresse, pseudo, key]
+        return [adresse, pseudo, key]
     else:
         return -1
 
@@ -107,11 +115,11 @@ class AESCipher(object):
 infoUser = {}
 if not getArg() == -1:
     infoUser = {
-        "addresse": getArg()[0],
+        "adresse": getArg()[0],
         "pseudo": getArg()[1],
         "key": getArg()[2]
     }
 if infoUser:
-    print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
+    print("pseudo: {}, adresse: {}".format(infoUser["adresse"],infoUser["pseudo"]))
 
     tcp(infoUser)
