@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import os, sys
 import sys
 import time
 import socket
@@ -38,7 +41,7 @@ class Send(threading.Thread):
             self.socket.sendall(bytes(saisie + "\r\n", 'utf-8'))
             time.sleep(0.001)
 
-def connection(hote, pseudo):
+def connection(hote, pseudo, pseudoContact ):
     print(hote)
     port = 666
 
@@ -46,6 +49,7 @@ def connection(hote, pseudo):
     canal.connect((hote, port))
 
     Send(canal, pseudo)
+    send(canal, pseudoContact)
     Recv(canal)
 
 
@@ -60,60 +64,25 @@ def getArg():
         except UnboundLocalError:
             print("Une erreur est survenue pour récupérer le pseudo")
 
-        return [addresse, pseudo]
+        try:
+            pseudoContact = sys.argv[3]
+        except UnboundLocalError:
+            print("Une erreur est survenue pour récupérer le pseudo 'contact' ")
+
+        return [addresse, pseudo , pseudoContact]
     else:
         return -1
-
-
-def FunctionRSA():
-    #creation d´un couple de clés
-    key = RSA.generate(1024)
-
-    #chiffrage
-    public_key = key.publickey()
-    enc_data = public_key.encrypt(b"""bonjour c'est un message secret""", 32)
-
-    #dechiffrage
-    x = key.decrypt(enc_data)
-    x = x.decode('utf-8')
-
-    #afficher ses clés:
-    k = key.exportKey('PEM')
-    p = key.publickey().exportKey('PEM')
-
-    #sauvegarder ses clés dans des fichiers:
-    with open('private.pem','w') as kf:
-	    kf.write(k.decode())
-	    kf.close()
-
-    with open('public.pem','w') as pf:
-	    pf.write(p.decode())
-	    pf.close()
-
-    #importer des clés à partir d'un fichier
-    with open('private.pem','r') as fk:
-	priv = fk.read()
-	fk.close()
-
-    with open('public.pem','r') as fp:
-	    pub = fp.read()
-	    fp.close()
-
-    privat = RSA.importKey(priv)
-    public = RSA.importKey(pub)
-
-
 
 
 infoUser = {}
 if not getArg() == -1:
     infoUser = {
         "addresse": getArg()[0],
-        "pseudo": getArg()[1]
+        "pseudo": getArg()[1],
+        "pseudoContact" : getArg()[2]
     }
 if infoUser:
-    print("pseudo: {}, addresse: {}".format(infoUser["addresse"],infoUser["pseudo"]))
+    print("pseudo: {}, addresse: {} , pseudoContact: {} ".format(infoUser["addresse"],infoUser["pseudo"],infoUser["pseudoContact"])
 
-    connection(infoUser["addresse"], infoUser["pseudo"])
-
+    connection(infoUser["addresse"], infoUser["pseudo"], infoUser["pseudoContact"])
 
