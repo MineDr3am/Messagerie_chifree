@@ -13,7 +13,7 @@ class Recv(threading.Thread):
     cipher  = None
     data = ''
 
-    def __init__(self, canal, cipher):
+    def __init__(self, canal, cipher, encrypted):
         self.socket = canal
         self.cipher = cipher
         threading.Thread.__init__(self)
@@ -41,7 +41,7 @@ class Send(threading.Thread):
     socket = None
     cipher = None
 
-    def __init__(self, canal, pseudo, cipher):
+    def __init__(self, canal, pseudo, cipher, encrypted):
         self.socket = canal
         self.cipher = cipher
         threading.Thread.__init__(self)
@@ -51,19 +51,15 @@ class Send(threading.Thread):
 
     def run(self):
         while True:
-            saisie = self.cipher.encrypt(input(""))
-            self.socket.sendall(bytes("[AES]" + str(saisie) + "\r\n", 'utf-8'))
+            if encrypted:
+                saisie = self.cipher.encrypt(input(""))
+                self.socket.sendall(bytes("[AES]" + str(saisie) + "\r\n", 'utf-8'))
+
+            else:
+                saisie = input('')
+                self.socket.sendall(bytes(str(saisie) + "\r\n", 'utf-8'))
+
             time.sleep(0.001)
-def tcp(user):
-    print(user["adresse"])
-    port = 666
-
-    cipher = AESCipher(user["key"])
-    canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    canal.connect((user["adresse"], port))
-
-    Send(canal, user["pseudo"], cipher)
-    Recv(canal, cipher)
 
 
 
@@ -77,10 +73,11 @@ def getArg():
             pseudo = sys.argv[2]
         except UnboundLocalError:
             print("Une erreur est survenue pour récupérer le pseudo")
-        try:
+        if len(sys.argv) == 4:
             key = sys.argv[3]
-        except UnboundLocalError:
-            print("Une erreur est survenue pour récupérer le pseudo")
+        else:
+            print("Pas de chiffrement utilisé")
+            key = ""
 
         return [adresse, pseudo, key]
     else:
@@ -122,4 +119,16 @@ if not getArg() == -1:
 if infoUser:
     print("pseudo: {}, adresse: {}".format(infoUser["adresse"],infoUser["pseudo"]))
 
-    tcp(infoUser)
+    print("connexion à: {}".format(infoUser["adresse"]))
+    port = 666
+
+    cipher = AESCipher(infoUser["key"])
+    canal = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    canal.connect((infoUser["adresse"], port))
+
+    if infoUser["key"] == "":
+        encrypted = False
+    else:
+        encrypted = True
+    Send(canal, infoUser["pseudo"], cipher, encrypted)
+    Recv(canal, cipher, encrypted)
