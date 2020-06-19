@@ -16,6 +16,7 @@ class Recv(threading.Thread):
     def __init__(self, canal, cipher, encrypted):
         self.socket = canal
         self.cipher = cipher
+        self.encrypted = encrypted
         threading.Thread.__init__(self)
         self.setDaemon = True
         self.start()
@@ -24,17 +25,26 @@ class Recv(threading.Thread):
         while True:
             self.data = self.data + self.socket.recv(1).decode('utf-8')
             if "\r\n" in self.data:
-                if "[AES]" in self.data:
-                    data2 = self.data
-                    pseudo = self.data.split(">")[0]
-                    self.data = self.data.split("'")[1]
-                    self.data =  pseudo + "> " + self.cipher.decrypt(self.data)
+                if self.encrypted == True:
+                    if "[AES]" in self.data:
+                        data2 = self.data
+                        pseudo = self.data.split(">")[0]
+                        self.data = self.data.split("'")[1]
+                        self.data =  pseudo + "[AES]> " + self.cipher.decrypt(self.data)
 
-                    if self.data == pseudo + "> ":
-                        self.data = data2
+                        if self.data == pseudo + "[AES]> ":
+                            print(data2)
+                            self.data = data2
 
-                print(self.data)
+                        print(self.data)
+                        self.data = ''
+
+                else:
+                    print(self.data)
+                    self.data = ''
+
                 self.data = ''
+
             time.sleep(0.001)
 
 class Send(threading.Thread):
