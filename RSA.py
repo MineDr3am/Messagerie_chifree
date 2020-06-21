@@ -18,7 +18,7 @@ from Crypto.PublicKey import RSA
 
 
 #importer des clés à partir d'un fichier
-with open('/home/steve-evian74/.ssh/hugue.priv','r') as fk:
+with open('/home/steve-evian74/.ssh/steve.priv','r') as fk:
 	priv = fk.read()
 	fk.close()
 
@@ -32,14 +32,18 @@ public = RSA.importKey(pub)
 
 # Je crypte le message avec la clé public de Steve. 
 public_key = public.publickey()
-enc_data = public_key.encrypt(b"""bonjour c'est un message secret""", 32)
-
+saisie = input("")  
+my_str_as_bytes = str.encode(saisie)
+enc_data = public_key.encrypt(my_str_as_bytes, 32)[0]
+print(enc_data)
 RsaToSend = "[RSA|steve]" + str(enc_data)
+message = str(enc_data)
 print(RsaToSend) 
-print(RsaToSend)
 #Je decrypte le message avec la clé privé de steve 
+print(type(message.encode()))
 print(type(enc_data))
-x = privat.decrypt(enc_data)
+
+x = privat.decrypt(message.encode())
 x = x.decode('utf-8')
 
 print(x)

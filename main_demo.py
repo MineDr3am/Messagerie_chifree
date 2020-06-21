@@ -39,18 +39,12 @@ class Send(threading.Thread):
 
     def run(self):
         while True:
-            #On saisit le texte
             saisie = input("")    
-            #on appelle un fonction cryptage pour chiffrer le message.
-            # Affecté dans la variable de Texte avec [RSA|Destination]MessageChiffré  
-            texte = crypt(saisie ,infoUser["pseudoContact"], infoUser["pseudo"])
-            # On délimite les caractère afin de récupérer le nom de l'auteur
-            Auteur = find_between( texte, "{RSA|", "}" )
-            #On délimite les caractère afin de récupérer le message chiffré 
-            Message = find_between( texte, "{RSA|"+infoUser["pseudoContact"]+"}", "Fin" )
-            #on appelle la fonction déchiffrage pour déchiffrer le message. 
-            Messagedecrypt = decrypt(Auteur, Message , infoUser["pseudoContact"] , infoUser["pseudo"])
-            #On affiche le message
+            MessageEncypt = crypt(saisie ,infoUser["pseudoContact"], infoUser["pseudo"])
+            Messagedecrypt = decrypt(MessageEncypt)
+            
+            print(MessageCrypt)
+            #message = decrypt(MessageRsaSend["Destination"], MessageRsaSend["MessageCrypt"], infoUser["pseudoContact"], infoUser["pseudo"])     
             self.socket.sendall(bytes(Messagedecrypt + "\r\n", 'utf-8'))
             time.sleep(0.001)
 
@@ -64,33 +58,32 @@ def connection(hote, pseudo ):
     Send(canal, pseudo)
     Recv(canal)
 
-# La fonction pour déchiffrer le message
-def decrypt (Destination, MessageCHiffrement , pseudoContact , pseudo):
-    if pseudoContact == "steve" and pseudo == "hugue":
-        if(Destination == pseudoContact ):
+def decrypt (MessageCHiffrement):
 
-            with open('/home/steve-evian74/.ssh/steve.priv','r') as fp:
-                priv = fp.read()
-                fp.close()
+
+    if infoUser["pseudoContact"] == "steve" and infoUser["pseudo"] == "hugue":
+
+        with open('/home/steve-evian74/.ssh/steve.priv','r') as fp:
+            priv = fp.read()
+            fp.close()
             
-            privat = RSA.importKey(priv)
-            x = privat.decrypt(MessageCHiffrement)
-            x = x.decode('utf-8')
-            return x
+        privat = RSA.importKey(priv)
+        x = privat.decrypt(MessageCHiffrement)
+        x = x.decode('utf-8')
+        return x
 
 
-    if pseudoContact == "hugue" and pseudo == "steve":
-        if(Destination == pseudoContact ):
-            with open('/home/steve-evian74/.ssh/hugue.priv','r') as fp:
-                priv = fp.read()
-                fp.close()
+    if infoUser["pseudoContact"] == "hugue" and infoUser["pseudo"] =="steve":
+        
+        with open('/home/steve-evian74/.ssh/hugue.priv','r') as fp:
+            priv = fp.read()
+            fp.close()
             
-            privat = RSA.importKey(priv)
-            x = privat.decrypt(str(MessageCHiffrement))
-            x = x.decode('utf-8')
-            return x
+        privat = RSA.importKey(priv)
+        x = privat.decrypt(MessageCHiffrement)
+        x = x.decode('utf-8')
+        return x
 
-# La fonction pour chiffrer le message
 def crypt(saisie , pseudoContact , pseudo):
 
     if pseudoContact == "steve" and pseudo == "hugue":
@@ -110,7 +103,7 @@ def crypt(saisie , pseudoContact , pseudo):
         NameCrypto =  "RSA"
         Destination = pseudoContact
         MessageCrypt = enc_data
-        return "{" + NameCrypto + "|" + Destination + "}" + MessageCrypt +" Fin"
+        return MessageCrypt 
         
         
 
@@ -130,9 +123,9 @@ def crypt(saisie , pseudoContact , pseudo):
         #RsaToSend = "[RSA |"+ pseudo +"]"+ str(enc_data)
         NameCrypto =  "RSA"
         Destination = pseudoContact
-        MessageCrypt =  str(enc_data)
+        MessageCrypt =  enc_data
         
-        return "{" + NameCrypto + "|" + Destination + "}" + MessageCrypt + " Fin"
+        return MessageCrypt
 
 def getArg():
     if len(sys.argv) >= 3:
@@ -171,9 +164,6 @@ def find_between_r( s, first, last ):
         return s[start:end]
     except ValueError:
         return ""
-
-
-
 
 
 NameCrypto =  ""
